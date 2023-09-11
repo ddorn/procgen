@@ -312,11 +312,13 @@ class CoinRun : public BasicAbstractGame {
             allow_monsters = false;
         }
 
-        bool coined = false;
+        // Choose the section where the coin will be placed
         int random_coin_position = rand_gen.randn(num_sections);
 
+        // Generate each section of the level independently
         for (int section_idx = 0; section_idx < num_sections; section_idx++) {
             if (curr_x + 15 >= w) {
+                // Not enough space for another section, while keeping the agent centered.
                 break;
             }
 
@@ -326,30 +328,29 @@ class CoinRun : public BasicAbstractGame {
                 dy = 0;
             }
 
+            // Make sure the agent can jump this high
             if (dy > max_dy) {
                 dy = max_dy;
             }
 
+            // Here curr_y is the height of the ground of the previous section
             if (curr_y >= 20) {
                 dy *= -1;
             } else if (curr_y >= 5 && rand_gen.randn(2) == 1) {
                 dy *= -1;
             }
 
-            int dx = rand_gen.randn(2 * dif) + 3 + int(dif / 3);
-
+            // Height of this section
             curr_y += dy;
 
             if (curr_y < 1) {
                 curr_y = 1;
             }
 
-            if (section_idx == random_coin_position){
-                if (coined == false){
-                    set_obj(curr_x, curr_y, RAND_COIN);
-                    coined = true;
-                }
-            }
+            // curr_x is the first block of the section
+            // and the variable is updated at the end of the loop
+            // yes, it's asymmetric
+            int dx = rand_gen.randn(2 * dif) + 3 + int(dif / 3);
 
             bool use_pit = allow_pit && (dx > 7) && (curr_y > 3) && (rand_gen.randn(20) >= pit_threshold);
 
@@ -397,35 +398,72 @@ class CoinRun : public BasicAbstractGame {
                     fill_ground_block(curr_x + x1 + x3, curr_y - 1, w1, 1);
                 }
 
+                // Coin generation in the pit: either on the left or right
+                // that is, the x1 first or x2 last block of the section
+                if (section_idx == random_coin_position) {
+                    int coin_dx = rand_gen.randn(x1 + x2);
+
+                    if (coin_dx < x1) {
+                        set_obj(curr_x + coin_dx, curr_y, RAND_COIN);
+                    } else {
+                        set_obj(curr_x + dx - x2 + coin_dx - x1, curr_y, RAND_COIN);
+                    }
+                }
+
             } else {
                 fill_ground_block(curr_x, 0, dx, curr_y);
 
-                int ob1_x = -1;
-                int ob2_x = -1;
+                // Store the two optional position for the obstacles
+                std::vector<int> obstacles_x;
+                std::vector<int> obstacles_y;
 
                 if (rand_gen.randn(10) < (2 * dif) && dx > 3) {
-                    ob1_x = curr_x + rand_gen.randn(dx - 2) + 1;
+                    int ob1_x = curr_x + rand_gen.randn(dx - 2) + 1;
                     create_saw_enemy(ob1_x, curr_y);
+
+                    obstacles_x.push_back(ob1_x);
+                    obstacles_y.push_back(curr_y);
                 }
 
                 if (rand_gen.randn(10) < dif && dx > 3 && (max_dx >= 4) && allow_monsters) {
-                    ob2_x = curr_x + rand_gen.randn(dx - 2) + 1;
-
+                    int ob2_x = curr_x + rand_gen.randn(dx - 2) + 1;
                     create_enemy(ob2_x, curr_y);
+
+                    obstacles_x.push_back(ob2_x);
+                    obstacles_y.push_back(curr_y);
                 }
 
                 if (allow_crate) {
                     for (int i = 0; i < 2; i++) {
                         int crate_x = curr_x + rand_gen.randn(dx - 2) + 1;
 
-                        if (rand_gen.randn(2) == 1 && ob1_x != crate_x && ob2_x != crate_x) {
+                        // Check if there is already an obstacle at this position
+                        bool already_obstacle = std::find(obstacles_x.begin(), obstacles_x.end(), crate_x) != obstacles_x.end();
+
+                        if (!already_obstacle && rand_gen.randn(2) == 1) {
                             int pile_height = rand_gen.randn(3) + 1;
 
                             for (int j = 0; j < pile_height; j++) {
                                 create_crate(crate_x, curr_y + j);
                             }
+
+                            obstacles_x.push_back(crate_x);
+                            obstacles_y.push_back(curr_y + pile_height - 1);
                         }
                     }
+                }
+
+                if (section_idx == random_coin_position) {
+                    int coin_x = curr_x + rand_gen.randn(dx);
+                    int coin_y = curr_y;
+                    // Find the height of the obstacle at this position, if any
+                    auto it = std::find(obstacles_x.begin(), obstacles_x.end(), coin_x);
+                    if (it != obstacles_x.end()) {
+                        int index = std::distance(obstacles_x.begin(), it);
+                        coin_y = obstacles_y[index] + 1;
+                    }
+
+                    set_obj(coin_x, coin_y, RAND_COIN);
                 }
             }
 
