@@ -81,8 +81,8 @@ def main():
     )
     advanced_group.add_argument(
         "--random-percent",
-        default=0,
-        type=int,
+        default=0.0,
+        type=float,
         help="How often to randomize the level construction",
     )
     advanced_group.add_argument(

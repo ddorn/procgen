@@ -49,7 +49,7 @@ void Game::parse_options(std::string name, VecOptions opts) {
     opts.consume_bool("center_agent", &options.center_agent);
     opts.consume_bool("use_sequential_levels", &options.use_sequential_levels);
 
-    opts.consume_int("random_percent", &options.random_percent); // changed
+    opts.consume_float("random_percent", &options.random_percent); // changed
     opts.consume_int("key_penalty", &options.key_penalty); // changed
     opts.consume_int("step_penalty", &options.step_penalty); // changed
     opts.consume_int("rand_region", &options.rand_region); //changed new
@@ -75,7 +75,7 @@ void Game::parse_options(std::string name, VecOptions opts) {
     opts.consume_int("plain_assets", &options.plain_assets);
     opts.consume_int("physics_mode", &options.physics_mode);
     opts.consume_int("debug_mode", &options.debug_mode);
-    // opts.consume_int("random_percent", &options.random_percent);
+    // opts.consume_float("random_percent", &options.random_percent);
     opts.consume_int("game_type", &game_type);
 
     opts.ensure_empty();
@@ -189,7 +189,7 @@ void Game::serialize(WriteBuffer *b) {
     b->write_int(options.distribution_mode);
     b->write_int(options.use_sequential_levels);
 
-    b->write_int(options.random_percent); // changed
+    b->write_float(options.random_percent); // changed
     b->write_int(options.key_penalty); // changed
     b->write_int(options.step_penalty); // changed
     b->write_int(options.rand_region); // changed new
@@ -255,7 +255,7 @@ void Game::deserialize(ReadBuffer *b) {
     options.distribution_mode = DistributionMode(b->read_int());
     options.use_sequential_levels = b->read_int();
 
-    options.random_percent = b->read_int();  // changed
+    options.random_percent = b->read_float();  // changed
     options.key_penalty = b->read_int();  // changed
     options.step_penalty = b->read_int();  // changed
     options.rand_region = b->read_int(); // changed new

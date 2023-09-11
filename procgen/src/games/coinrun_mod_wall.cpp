@@ -478,8 +478,8 @@ class CoinRunModWall : public BasicAbstractGame {
         is_on_crate = false;
 
         init_floor_and_walls();
-        int rand_check = rand_gen.randn(100);
-        randomize_goal = (rand_check < options.random_percent);
+        float rand_check = rand_gen.rand01();
+        randomize_goal = (rand_check < (options.random_percent / 100.0f));
         generate_coin(randomize_goal);
     }
 

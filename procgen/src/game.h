@@ -54,7 +54,7 @@ struct GameOptions {
     bool use_sequential_levels = false;
 
     // added
-    int random_percent = 0;
+    float random_percent = 0.0f;
     int key_penalty = 0;
     int step_penalty = 0;
     int rand_region = 0;

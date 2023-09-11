@@ -21,6 +21,14 @@ void VecOptions::consume_int(std::string name, int32_t *value) {
     *value = *(int32_t *)(opt.data);
 }
 
+void VecOptions::consume_float(std::string name, float *value) {
+    auto opt = find_option(name, LIBENV_DTYPE_FLOAT32);
+    if (opt.data == nullptr) {
+        return;
+    }
+    *value = *(float *)(opt.data);
+}
+
 void VecOptions::consume_bool(std::string name, bool *value) {
     auto opt = find_option(name, LIBENV_DTYPE_UINT8);
     if (opt.data == nullptr) {
